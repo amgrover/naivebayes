@@ -55,12 +55,12 @@ public class NBAdaBoost {
 		Instance[] fulldata = instances.toArray(new Instance[instances.size()]);
 		int NUM_OF_ATTRIBUTE = updateMax(instances);
 		max = NUM_OF_ATTRIBUTE;
-		int k = 5;
+		int k = 10;
 		while (k > 0) {
 			Map<String, Map<String, Integer>> likelihood = new HashMap<String, Map<String, Integer>>();
 			likelihood.put("+1", new HashMap<String, Integer>());
 			likelihood.put("-1", new HashMap<String, Integer>());
-			int size = (int) (fulldata.length * 0.80);
+			int size = (int) (fulldata.length * 0.60);
 			Instance[] sampledData = getSample(size, fulldata);
 			Integer positiveCount = 0;
 			Integer negativeCount = 0;
@@ -262,9 +262,27 @@ public class NBAdaBoost {
 				+ falsePositive + " " + trueNegative);
 		Double accuracy = (double) (trueNegative + truePositive)
 				/ (trueNegative + truePositive + falseNegative + falsePositive);
-		System.out.println(accuracy * 100);
+		System.out.println(accuracy);
+		System.out.println("Error rate " + (1.0 - accuracy));
+		System.out.println("Sensitivity "
+				+ ((double) truePositive / (truePositive + falseNegative)));
+		System.out.println("Specifity "
+				+ ((double) trueNegative / (falsePositive + trueNegative)));
+		Double precision = (double) truePositive
+				/ (truePositive + falsePositive);
+		System.out.println("Precision " + precision);
+		Double recall = (double) truePositive / (truePositive + falseNegative);
+		System.out.println("Recall " + recall);
+		Double fMeasure = (2.0 * precision * recall) / (precision + recall);
+		System.out.println("Fmeasure " + fMeasure);
+		Double Fpoint2 = ((1 + 0.2 * 0.2) * precision * recall)
+				/ (0.2 * 0.2 * precision + recall);
+		System.out.println("F point 2 " + Fpoint2);
+		Double F2 = ((1 + 2 * 2) * precision * recall)
+				/ (2 * 2 * precision + recall);
+		System.out.println("F2 " + F2);
 		intialize();
-		
+
 		List<Instance> instances2 = loadDataIntoMemory(test);
 		test(instances2);
 		System.out.println();
@@ -272,7 +290,23 @@ public class NBAdaBoost {
 				+ falsePositive + " " + trueNegative);
 		Double accuracys = (double) (trueNegative + truePositive)
 				/ (trueNegative + truePositive + falseNegative + falsePositive);
-		System.out.println(accuracys * 100);
+		System.out.println(accuracys);
+		System.out.println("Error rate " + (1.0 - accuracys));
+		System.out.println("Sensitivity "
+				+ ((double) truePositive / (truePositive + falseNegative)));
+		System.out.println("Specifity "
+				+ ((double) trueNegative / (falsePositive + trueNegative)));
+		precision = (double) truePositive / (truePositive + falsePositive);
+		System.out.println("Precision " + precision);
+		recall = (double) truePositive / (truePositive + falseNegative);
+		System.out.println("Recall " + recall);
+		fMeasure = (2.0 * precision * recall) / (precision + recall);
+		System.out.println("Fmeasure " + fMeasure);
+		Fpoint2 = ((1 + 0.2 * 0.2) * precision * recall)
+				/ (0.2 * 0.2 * precision + recall);
+		System.out.println("F point 2 " + Fpoint2);
+		F2 = ((1 + 2 * 2) * precision * recall) / (2 * 2 * precision + recall);
+		System.out.println("F2 " + F2);
 	}
 
 	private void intialize() {

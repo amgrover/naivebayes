@@ -16,7 +16,6 @@ public class NaiveBayes {
 
 	private Map<String, Map<String, Integer>> likelihood = new HashMap<String, Map<String, Integer>>();
 	private Integer NUM_OF_ATTRIBUTE = 0;
-	private Map<String, Integer> attributesClass = new HashMap<String, Integer>();
 	private Integer positiveCount = 0;
 	private Integer negativeCount = 0;
 	private Integer truePositive = 0;
@@ -29,32 +28,25 @@ public class NaiveBayes {
 		String line;
 		likelihood.put("+1", new HashMap<String, Integer>());
 		likelihood.put("-1", new HashMap<String, Integer>());
-		attributesClass.put("+1", 0);
-		attributesClass.put("-1", 0);
 		while ((line = br.readLine()) != null) {
 			String[] wordIds = line.split("\\s+");
 			String classLabel = wordIds[0];
 			if (classLabel.equals("+1")) {
-				positiveCount = positiveCount + 1;
+				positiveCount += 1;
 			} else {
 				negativeCount += 1;
 			}
 			for (int i = 1; i < wordIds.length; i++) {
-				String[] attrValue = wordIds[i].split(":");
-				String attribute = attrValue[0];
-				Integer value = Integer.parseInt(attrValue[1]);
+				String keyVal = wordIds[i];
 				Map<String, Integer> map = likelihood.get(classLabel);
-				Integer val = map.get(attribute);
+				Integer val = map.get(keyVal);
 				if (val == null) {
-					val = value;
-				} else {
-					val = val + value;
+					val = 0;
 				}
-				map.put(attribute, val);
-				attributesClass.put(classLabel, attributesClass.get(classLabel)
-						+ value);
-				if (Integer.parseInt(attribute) > NUM_OF_ATTRIBUTE) {
-					NUM_OF_ATTRIBUTE = Integer.parseInt(attribute);
+				map.put(keyVal, val + 1);
+				if (Integer.parseInt(wordIds[i].split(":")[0]) > NUM_OF_ATTRIBUTE) {
+					NUM_OF_ATTRIBUTE = Integer
+							.parseInt(wordIds[i].split(":")[0]);
 				}
 			}
 		}
@@ -69,36 +61,33 @@ public class NaiveBayes {
 		while ((line = br.readLine()) != null) {
 			String[] wordIds = line.split("\\s+");
 			String originalClassLabel = wordIds[0];
-			if(originalClassLabel.equals("+1")){
-				int a=1;
-			}
 			Double prob1 = 0.0;// for +1
 			Double prob2 = 0.0;// for -1
 			for (int i = 1; i < wordIds.length; i++) {
-				String[] attrValue = wordIds[i].split(":");
-				String attribute = attrValue[0];
-				Integer value = Integer.parseInt(attrValue[1]);
-				Integer positive = likelihood.get("+1").get(attribute);
-				Integer negative = likelihood.get("-1").get(attribute);
-				if (positive == null) {
-					positive = 0;
+				String keyVal = wordIds[i];
+				Map<String, Integer> mapPositive = likelihood.get("+1");
+				Map<String, Integer> mapNegative = likelihood.get("-1");
+				Integer count1 = mapPositive.get(wordIds[i]);
+				Integer count2 = mapNegative.get(wordIds[i]);
+				if (count1 == null) {
+					count1 = 0;
 				}
-				if (negative == null) {
-					negative = 0;
+				if (count2 == null) {
+					count2 = 0;
 				}
-				prob1 += Math.log((double) (positive + 1)
-						/ (attributesClass.get("+1") + NUM_OF_ATTRIBUTE));
-				prob2 += Math.log((double) (negative + 1)
-						/ (attributesClass.get("+1") + NUM_OF_ATTRIBUTE));
+				prob1 += Math.log((double) (count1 + 1)
+						/ (positiveCount + NUM_OF_ATTRIBUTE));
+				prob2 += Math.log((double) (count2 + 1)
+						/ (negativeCount + NUM_OF_ATTRIBUTE));
 
 			}
 			prob1 += Math.log(p);
 			prob2 += Math.log(n);
 			String predictedClassLabel = "";
-			if (prob1 > prob2) {
-				predictedClassLabel = "+1";
-			} else {
+			if (prob1 < prob2) {
 				predictedClassLabel = "-1";
+			} else {
+				predictedClassLabel = "+1";
 			}
 
 			if (predictedClassLabel.equals(originalClassLabel)) {
@@ -114,6 +103,7 @@ public class NaiveBayes {
 					falseNegative++;
 				}
 			}
+
 		}
 
 	}
@@ -138,12 +128,53 @@ public class NaiveBayes {
 	public void run(String train, String test) throws IOException {
 		train(train);
 		test(train);
-		System.out.print(truePositive + " " + falseNegative + " "
+		System.out.println(truePositive + " " + falseNegative + " "
 				+ falsePositive + " " + trueNegative);
+		Double accuracy = (double) (trueNegative + truePositive)
+				/ (trueNegative + truePositive + falseNegative + falsePositive);
+		System.out.println(accuracy);
+		System.out.println("Error rate " + (1.0 - accuracy));
+		System.out.println("Sensitivity "
+				+ ((double) truePositive / (truePositive + falseNegative)));
+		System.out.println("Specifity "
+				+ ((double) trueNegative / (falsePositive + trueNegative)));
+		Double precision = (double) truePositive
+				/ (truePositive + falsePositive);
+		System.out.println("Precision " + precision);
+		Double recall = (double) truePositive / (truePositive + falseNegative);
+		System.out.println("Recall " + recall);
+		Double fMeasure = (2.0 * precision * recall) / (precision + recall);
+		System.out.println("Fmeasure " + fMeasure);
+		Double Fpoint2 = ((1 + 0.2 * 0.2) * precision * recall)
+				/ (0.2 * 0.2 * precision + recall);
+		System.out.println("F point 2 " + Fpoint2);
+		Double F2 = ((1 + 2 * 2) * precision * recall)
+				/ (2 * 2 * precision + recall);
+		System.out.println("F2 " + F2);
 		intialize();
 		test(test);
-		System.out.print(truePositive + " " + falseNegative + " "
+		System.out.println();
+		System.out.println(truePositive + " " + falseNegative + " "
 				+ falsePositive + " " + trueNegative);
+		Double accuracys = (double) (trueNegative + truePositive)
+				/ (trueNegative + truePositive + falseNegative + falsePositive);
+		System.out.println(accuracys);
+		System.out.println("Error rate " + (1.0 - accuracy));
+		System.out.println("Sensitivity "
+				+ ((double) truePositive / (truePositive + falseNegative)));
+		System.out.println("Specifity "
+				+ ((double) trueNegative / (falsePositive + trueNegative)));
+		precision = (double) truePositive / (truePositive + falsePositive);
+		System.out.println("Precision " + precision);
+		recall = (double) truePositive / (truePositive + falseNegative);
+		System.out.println("Recall " + recall);
+		fMeasure = (2.0 * precision * recall) / (precision + recall);
+		System.out.println("Fmeasure " + fMeasure);
+		Fpoint2 = ((1 + 0.2 * 0.2) * precision * recall)
+				/ (0.2 * 0.2 * precision + recall);
+		System.out.println("F point 2 " + Fpoint2);
+		F2 = ((1 + 2 * 2) * precision * recall) / (2 * 2 * precision + recall);
+		System.out.println("F2 " + F2);
 	}
 
 	private void intialize() {
